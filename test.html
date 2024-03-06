@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Type Search</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+    }
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        margin-top: 0;
+    }
+    #searchInput {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    #suggestedAnswers {
+        text-align: left;
+    }
+    .suggested-answer {
+        margin-bottom: 10px;
+        cursor: pointer;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+    .suggested-answer:hover {
+        background-color: #e9e9e9;
+    }
+    #messageContainer {
+        margin-top: 20px;
+        text-align: left;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+    .btn-container {
+        margin-top: 10px;
+    }
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 0 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    .btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Contact Type Search</h2>
+    <input type="text" id="searchInput" placeholder="Search for a contact type...">
+    <div id="suggestedAnswers"></div>
+    <div id="messageContainer"></div>
+</div>
+
+<script>
+    const suggestedAnswers = document.getElementById("suggestedAnswers");
+    const messageContainer = document.getElementById("messageContainer");
+
+    // List of contact types
+    const contactTypes = [
+        "Account & Settings - Account waitlisted/deactivated",
+        "Asked about contract",
+        "Asked about restaurant analytics",
+        // Add other contact types here
+        "Not getting cash orders due to arrears"
+    ];
+
+    // Function to handle click on contact type
+    function handleContactTypeClick(contactType) {
+        const scriptUrl = `file:///home/john.lemaire@uber.com/Downloads/decision_trees/${contactType.replaceAll(" ", "_")}.js`;
+        fetch(scriptUrl)
+            .then(response => response.text())
+            .then(scriptText => {
+                const scriptElement = document.createElement("script");
+                scriptElement.textContent = scriptText;
+                document.head.appendChild(scriptElement);
+            })
+            .catch(error => {
+                console.error("Error loading script:", error);
+            });
+    }
+
+    // Event listener for input changes
+    document.getElementById("searchInput").addEventListener("input", function() {
+        const searchTerm = this.value.trim();
+        displaySuggestedAnswers(searchTerm);
+    });
+
+    // Function to display suggested answers based on search input
+    function displaySuggestedAnswers(searchTerm) {
+        suggestedAnswers.innerHTML = ""; // Clear previous suggestions
+        const filteredContacts = contactTypes.filter(contact =>
+            contact.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        filteredContacts.forEach(contact => {
+            const div = document.createElement("div");
+            div.classList.add("suggested-answer");
+            div.textContent = contact;
+            div.addEventListener("click", () => {
+                handleContactTypeClick(contact);
+            });
+            suggestedAnswers.appendChild(div);
+        });
+    }
+</script>
+
+</body>
+</html>
