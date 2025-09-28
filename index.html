@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline Ops Copilot Dashboard</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="branding">
+      <span class="logo" aria-hidden="true">🧭</span>
+      <div>
+        <h1>Offline Ops Copilot</h1>
+        <p class="subtitle">Local-first analyst workspace for operations teams</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn ghost" id="toggle-dark">Toggle dark mode</button>
+      <button class="btn primary" id="open-dictionary">Dictionary</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-labelledby="upload-title">
+      <h2 id="upload-title">1. Upload &amp; map</h2>
+      <p class="panel-description">Drop a file to get started. CSV, TSV and XLSX are supported offline.</p>
+      <label class="drop-zone" for="file-input" id="drop-zone">
+        <input id="file-input" type="file" accept=".csv,.tsv,.xlsx,.xls" />
+        <span id="drop-zone-text">Click or drop data exports</span>
+      </label>
+      <div class="panel-section" id="profile-section">
+        <div class="section-header">
+          <h3>Saved profiles</h3>
+          <button class="btn ghost" id="save-profile">Save current mapping</button>
+        </div>
+        <div class="profile-controls">
+          <select id="profile-select" aria-label="Mapping profiles"></select>
+          <button class="btn ghost" id="delete-profile" title="Delete selected profile">🗑️</button>
+        </div>
+      </div>
+      <div class="panel-section" id="mapping-section">
+        <div class="section-header">
+          <h3>Schema mapping</h3>
+          <button class="btn ghost" id="auto-map">Auto-detect</button>
+        </div>
+        <div class="mapping-grid" id="mapping-grid" aria-live="polite"></div>
+      </div>
+      <div class="panel-section">
+        <div class="section-header">
+          <h3>Data hygiene</h3>
+        </div>
+        <div class="control-row">
+          <label for="timezone-select">Timezone</label>
+          <select id="timezone-select"></select>
+        </div>
+        <div class="control-row">
+          <label for="outlier-cap">Cap metrics at P99</label>
+          <input type="checkbox" id="outlier-cap" checked />
+        </div>
+        <div class="control-row">
+          <label for="pii-strip">Strip PII from exports</label>
+          <input type="checkbox" id="pii-strip" />
+        </div>
+      </div>
+      <div class="panel-section" id="filter-section">
+        <div class="section-header">
+          <h3>Filters</h3>
+          <button class="btn ghost" id="reset-filters">Reset</button>
+        </div>
+        <div class="filter-grid">
+          <label>
+            Date range
+            <input type="text" id="date-range" placeholder="YYYY-MM-DD to YYYY-MM-DD" />
+          </label>
+          <label>
+            Market
+            <select id="market-filter" multiple></select>
+          </label>
+          <label>
+            Queue
+            <select id="queue-filter" multiple></select>
+          </label>
+          <label>
+            Priority
+            <select id="priority-filter" multiple></select>
+          </label>
+        </div>
+        <button class="btn secondary" id="apply-filters">Apply filters</button>
+      </div>
+      <div class="panel-section" id="saved-views-section">
+        <div class="section-header">
+          <h3>Saved views</h3>
+          <button class="btn ghost" id="save-view">Save current view</button>
+        </div>
+        <select id="saved-views" aria-label="Saved dashboard views"></select>
+      </div>
+    </section>
+
+    <section class="content" aria-live="polite">
+      <section class="intent-section" aria-labelledby="intent-title">
+        <div class="intent-header">
+          <div>
+            <h2 id="intent-title">2. Intent</h2>
+            <p>Describe what you need: “Explain inflow spikes in September”</p>
+          </div>
+          <div class="chips" id="quick-chips"></div>
+        </div>
+        <textarea id="intent-input" rows="2" placeholder="Type an analysis question"></textarea>
+        <button class="btn primary" id="run-analysis">Run analysis</button>
+      </section>
+
+      <section class="filters-pill" id="active-filters" aria-live="polite"></section>
+
+      <section class="cards" id="kpi-cards" aria-label="Key metrics"></section>
+
+      <section class="cards" id="visual-cards" aria-label="Charts"></section>
+
+      <section class="cards" id="insight-cards" aria-label="Insights"></section>
+
+      <section class="exports" aria-labelledby="export-title">
+        <h2 id="export-title">3. Share</h2>
+        <div class="export-grid">
+          <button class="btn secondary" id="copy-slack">Slack update</button>
+          <button class="btn secondary" id="download-email">Email draft (.eml)</button>
+          <button class="btn secondary" id="download-pdf">One-pager PDF</button>
+          <button class="btn secondary" id="download-zip">ZIP bundle</button>
+          <button class="btn secondary" id="download-csv">Sheets-ready CSV</button>
+        </div>
+      </section>
+    </section>
+
+    <aside class="pinned" aria-labelledby="pinned-title">
+      <div class="section-header">
+        <h2 id="pinned-title">Pinned insights</h2>
+        <button class="btn ghost" id="clear-pins">Clear</button>
+      </div>
+      <ol id="pinned-list"></ol>
+    </aside>
+  </main>
+
+  <dialog id="dictionary-dialog" aria-labelledby="dictionary-title">
+    <form method="dialog" class="dictionary">
+      <header>
+        <h2 id="dictionary-title">Dictionary manager</h2>
+        <button class="btn ghost" value="cancel">Close</button>
+      </header>
+      <p>Map synonyms so the copilot recognises your taxonomy. Values are saved locally.</p>
+      <div class="dictionary-grid" id="dictionary-grid"></div>
+      <div class="dictionary-actions">
+        <button type="button" class="btn secondary" id="add-dictionary-entry">Add row</button>
+        <button type="button" class="btn ghost" id="export-dictionary">Export</button>
+        <label class="btn ghost file-input">
+          Import
+          <input type="file" id="import-dictionary" accept="application/json" />
+        </label>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="card-template">
+    <article class="card">
+      <header>
+        <h3 class="card-title"></h3>
+        <button class="btn ghost" data-pin>📌</button>
+      </header>
+      <div class="card-body"></div>
+      <footer class="card-footer"></footer>
+    </article>
+  </template>
+
+  <script src="assets/lib/papaparse.min.js"></script>
+  <script src="assets/lib/xlsx.full.min.js"></script>
+  <script src="assets/lib/luxon.min.js"></script>
+  <script src="assets/lib/chart.umd.min.js"></script>
+  <script src="assets/lib/html2canvas.min.js"></script>
+  <script src="assets/lib/jspdf.umd.min.js"></script>
+  <script src="assets/lib/jszip.min.js"></script>
+  <script src="assets/lib/FileSaver.min.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
